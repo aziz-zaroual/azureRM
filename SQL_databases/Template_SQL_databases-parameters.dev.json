@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+        "sqlserverNameMeta": {
+            "value": "sqlsrvsdsdev01"
+        },
+        "databaseName": {
+            "value": "bsdsdev01"
+        },
+		"administratorLogin": {
+            "value": "sdsadmsql"
+        },
+        "administratorLoginPassword": {
+            "value": "EHhvh2pWuDTRonDalD0"
+        },
+        "collation": {
+            "value": "FRENCH_BIN"
+        },
+        "edition": {
+            "value": "Standard"
+        },
+        "maxSizeBytes": {
+            "value": "268435456000"
+        },
+        "requestedServiceObjectiveName": {
+            "value": "S1"
+          }
+	}
+}

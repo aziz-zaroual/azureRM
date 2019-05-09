@@ -1,0 +1,307 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "string"
+        },
+        "clusterLoginUserName": {
+            "type": "string"
+        },
+        "clusterLoginPassword": {
+            "type": "securestring"
+        },
+        "location": {
+            "type": "string"
+        },
+        "clusterVersion": {
+            "type": "string"
+        },
+        "clusterKind": {
+            "type": "string",
+            "allowedValues": ["spark","INTERACTIVEHIVE"]
+        },
+        "sshUserName": {
+            "type": "string"
+        },
+        "sshPassword": {
+            "type": "securestring"
+        },
+        "hiveUserName": {
+            "type": "string"
+        },
+        "hivePassword": {
+            "type": "securestring"
+        },
+        "oozieUserName": {
+            "type": "string"
+        },
+        "ooziePassword": {
+            "type": "securestring"
+        },
+        "sqlserver":{
+            "type": "string"
+        },
+        "headnode_vmSize":{
+            "type": "string"
+        },
+        "workernode_vmSize":{
+            "type": "string"
+        },
+        "StorageAccountDataName":{
+            "type": "string"
+        },
+        "StorageAccountBuildName":{
+            "type": "string"
+        },
+        "BlobContainerHDI":{
+            "type": "string"
+        },
+        "VirtualNetworkName":{
+            "type": "string"
+        },
+        "SubnetName":{
+            "type": "string"
+        },
+        "zookeepernode_vmSize":{
+            "type": "string"
+        },
+        "databaseNameOozie":{
+            "type": "string"
+        },
+        "databaseNameHive":{
+            "type": "string"
+        },
+        "VnetResourceGroupName":{
+            "type": "string"
+        },
+        "aadTenantId":{
+            "type": "string"
+        },
+        "servicePrincipalApplicationId":{
+            "type": "string"
+        },
+        "servicePrincipalCertificateContents":{
+            "type": "string"
+        },
+        "DLSservicePrincipalCertificatePassword":{
+            "type": "securestring"
+        },
+        "SasKey":{
+            "type": "string"
+        },
+        "ArtifactsName" :{
+            "type": "string"
+        },
+        "BlobContainerTemplate":{
+            "type": "string"
+        },
+        "ADLStoreName":{
+            "type": "string"
+        },
+        "JarsDirectory":{
+            "type": "string"
+        },
+        "RootDir":{
+            "type": "string"
+        }, 
+        "InputRootDir":{
+            "type": "string"
+        }, 
+        "AppInsightKey":{
+            "type": "securestring"
+        }
+
+    },
+    "variables": {
+        "SingleQuote": "'",
+
+        "InitScriptParameters1": "[concat(variables('SingleQuote'),'https://',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',parameters('BlobContainerTemplate'),'/',variables('SingleQuote'))]",
+        "InitScriptParameters2": "[concat(variables('SingleQuote'),parameters('SasKey'),variables('SingleQuote'))]",
+        "InitScriptParameters3": "[concat(variables('SingleQuote'),'StorageAccountURL:','wasbs://',parameters('BlobContainerHDI'),'@',parameters('StorageAccountDataName'),'.blob.core.windows.net',variables('SingleQuote'))]",
+        "InitScriptParameters4": "[concat(variables('SingleQuote'),parameters('sshUserName'),variables('SingleQuote'))]",
+        "InitScriptParameters5": "[concat(variables('SingleQuote'),'ADLStoreURL:adl://',parameters('ADLStoreName'),'.azuredatalakestore.net',variables('SingleQuote'))]",
+        "InitScriptParameters6": "[concat(variables('SingleQuote'),parameters('ArtifactsName'),variables('SingleQuote'))]",
+        "InitScriptParameters7": "[concat(variables('SingleQuote'),'RootDir:',parameters('RootDir'),variables('SingleQuote'))]",
+        "InitScriptParameters8": "[concat(variables('SingleQuote'),'InputRootDir:',parameters('InputRootDir'),variables('SingleQuote'))]", 
+
+
+
+        "InitScriptLog4jParameters1": "[concat(variables('SingleQuote'),'https://',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',parameters('BlobContainerTemplate'),'/',parameters('JarsDirectory'),variables('SingleQuote'))]",
+        "InitScriptLog4jParameters2": "[concat(variables('SingleQuote'),'wasbs://logs@',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',variables('SingleQuote'))]",
+        "InitScriptLog4jParameters3": "[concat(variables('SingleQuote'),parameters('AppInsightKey'),variables('SingleQuote'))]",
+        "InitScriptLog4jParameters4": "[concat(variables('SingleQuote'),parameters('SasKey'),variables('SingleQuote'))]",
+        "vnetId" : "[concat('/subscriptions/', subscription().subscriptionId,'/resourceGroups/', parameters('VnetResourceGroupName'),'/providers/Microsoft.Network/virtualNetworks/', parameters('VirtualNetworkName'))]",
+        "vNet":{
+            "name": "[parameters('VirtualNetworkName')]",
+            "addressSpacePrefix": "10.5.210.0/23",
+            "subnetName": "[parameters('SubnetName')]",
+            "subnetPrefix": "10.5.210.0/23",
+            "id": "[variables('vnetId')]",
+            "subnet": "[concat(variables('vnetId'), '/subnets/',parameters('SubnetName'))]"
+          }
+    },
+    "resources": [
+       {
+            "apiVersion": "2015-03-01-preview",
+            "name": "[parameters('clusterName')]",
+            "type": "Microsoft.HDInsight/clusters",
+            "location": "[parameters('location')]",
+            "dependsOn": [],
+            "properties": {
+                "clusterVersion": "[parameters('clusterVersion')]",
+                "osType": "Linux",
+                "clusterDefinition": {
+                    "kind": "[parameters('clusterKind')]",
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "[parameters('clusterLoginUserName')]",
+                            "restAuthCredential.password": "[parameters('clusterLoginPassword')]"
+                        },
+                        "clusterIdentity": {
+                            "clusterIdentity.applicationId": "[parameters('servicePrincipalApplicationId')]",
+                            "clusterIdentity.certificate": "[parameters('servicePrincipalCertificateContents')]",
+                            "clusterIdentity.certificatePassword": "[parameters('DLSservicePrincipalCertificatePassword')]",
+                            "clusterIdentity.aadTenantId": "[concat('https://login.windows.net/',parameters('aadTenantId'))]",
+                            "clusterIdentity.resourceUri": "https://management.core.windows.net/"
+                        },
+                        "hive-site": {
+                            "javax.jdo.option.ConnectionDriverName": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+                            "javax.jdo.option.ConnectionURL": "[concat('jdbc:sqlserver://',parameters('sqlserver'),'.database.windows.net;database=',parameters('databaseNameHive'),';encrypt=true;trustServerCertificate=true;create=false;loginTimeout=300')]",
+                            "javax.jdo.option.ConnectionUserName": "[parameters('hiveUserName')]",
+                            "javax.jdo.option.ConnectionPassword": "[parameters('hivePassword')]",
+                            "hive.metastore.max.typename.length" : "30000"
+                        },
+                        "hive-env": {
+                            "hive_database": "Existing MSSQL Server database with SQL authentication",
+                            "hive_database_name": "[parameters('databaseNameHive')]",
+                            "hive_database_type": "mssql",
+                            "hive_existing_mssql_server_database": "[parameters('databaseNameHive')]",
+                            "hive_existing_mssql_server_host": "[concat(parameters('sqlserver'),'.database.windows.net')]",
+                            "hive_hostname": "[concat(parameters('sqlserver'),'.database.windows.net')]"
+                        },
+                        "oozie-site": {
+                            "oozie.service.JPAService.jdbc.driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+                            "oozie.service.JPAService.jdbc.url": "[concat('jdbc:sqlserver://',parameters('sqlserver'),'.database.windows.net;database=',parameters('databaseNameOozie'),';encrypt=true;trustServerCertificate=true;create=false;loginTimeout=300')]",
+                            "oozie.service.JPAService.jdbc.username": "[parameters('oozieUserName')]",
+                            "oozie.service.JPAService.jdbc.password": "[parameters('ooziePassword')]",
+                            "oozie.db.schema.name": "oozie"
+                        },
+                        "oozie-env": {
+                            "oozie_database": "Existing MSSQL Server database with SQL authentication",
+                            "oozie_database_name": "[parameters('databaseNameOozie')]",
+                            "oozie_database_type": "mssql",
+                            "oozie_existing_mssql_server_database": "[parameters('databaseNameOozie')]",
+                            "oozie_existing_mssql_server_host": "[concat(parameters('sqlserver'), '.database.windows.net')]",
+                            "oozie_hostname": "[concat(parameters('sqlserver'),'.database.windows.net')]"
+                        }
+                    }
+                },
+                "storageProfile": {
+                    "storageaccounts": [
+                        {
+                            "name": "[concat(parameters('StorageAccountDataName'),'.blob.core.windows.net')]",
+                            "isDefault": true,
+                            "container": "[parameters('BlobContainerHDI')]",
+                            "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts',parameters('StorageAccountDataName')), '2015-06-15').key1]"
+                        }
+                    ]
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "name": "headnode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "[parameters('headnode_vmSize')]"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[parameters('sshUserName')]",
+                                    "password": "[parameters('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vNet').id]",
+                                "subnet": "[variables('vNet').subnet]"
+                              },
+                              "scriptActions": [
+                                  
+                                {
+                                    "name": "InitScriptLog4j",
+                                    "uri": "[concat('https://',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',parameters('BlobContainerTemplate'),'/','post-install.sh', parameters('SasKey'))]",
+                                    "parameters": "[concat(variables('InitScriptLog4jParameters1'),' ',variables('InitScriptLog4jParameters2'),' ',variables('InitScriptLog4jParameters3'), ' ',variables('InitScriptLog4jParameters4'))]"
+                                }
+                                
+                                ,
+                                
+                                {
+                                    "name": "initscript",
+                                    "uri": "[concat('https://',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',parameters('BlobContainerTemplate'),'/','InitScript.sh', parameters('SasKey'))]",
+                                    "parameters": "[concat(variables('InitScriptParameters1'),' ',variables('InitScriptParameters2'),' ',variables('InitScriptParameters3'), ' ',variables('InitScriptParameters4'), ' ',variables('InitScriptParameters5'), ' ',variables('InitScriptParameters6'), ' ',variables('InitScriptParameters7'), ' ',variables('InitScriptParameters8'))]"
+                                }
+                                
+                                
+                            ]
+                              
+                        },
+                        {
+                            "name": "workernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 10,
+                            "hardwareProfile": {
+                                "vmSize": "[parameters('workernode_vmSize')]"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[parameters('sshUserName')]",
+                                    "password": "[parameters('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vNet').id]",
+                                "subnet": "[variables('vNet').subnet]"
+                            },
+                            "scriptActions": [
+                                
+                                 {
+                                    "name": "InitScriptLog4j",
+                                    "uri": "[concat('https://',parameters('StorageAccountBuildName'),'.blob.core.windows.net/',parameters('BlobContainerTemplate'),'/','post-install.sh', parameters('SasKey'))]",
+                                    "parameters": "[concat(variables('InitScriptLog4jParameters1'),' ',variables('InitScriptLog4jParameters2'),' ',variables('InitScriptLog4jParameters3'), ' ',variables('InitScriptLog4jParameters4'))]"
+                                 }
+                                 
+                            ]
+                        },
+                        {
+                            "name": "zookeepernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 3,
+                            "hardwareProfile": {
+                                "vmSize": "[parameters('zookeepernode_vmSize')]"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "[parameters('sshUserName')]",
+                                    "password": "[parameters('sshPassword')]"
+                                }
+                            },
+                            "virtualNetworkProfile": {
+                                "id": "[variables('vNet').id]",
+                                "subnet": "[variables('vNet').subnet]"
+                              },
+                              "scriptActions": []
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+		"cluster": {
+			"type": "object",
+			"value": "[reference(resourceId('Microsoft.HDInsight/clusters',parameters('clusterName')))]"
+		}
+	}
+}

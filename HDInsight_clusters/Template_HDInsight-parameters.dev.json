@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+        "clusterVersion": {
+            "value": "3.6"
+        },
+        "clusterKind": {
+            "value": "spark"
+        },
+        "sqlserver":{
+            "value": "pzsqlsrvcotdev01"
+        },
+        "headnode_vmSize":{
+            "value": "Standard_D12_V2"
+        },
+        "workernode_vmSize":{
+            "value": "Standard_D4_V2"
+        },
+        "zookeepernode_vmSize":{
+            "value": "medium"
+        },
+        "databaseNameOozie":{
+            "value": "bcotdevoozie01"
+        },
+        "databaseNameHive":{
+            "value": "bcotdevhive01"
+        },
+        "JarsDirectory":{
+            "value": "hdi-spark"
+        },
+        "location":{
+            "value": "northeurope"
+        } 
+	}
+}
